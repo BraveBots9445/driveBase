@@ -1,16 +1,17 @@
+import commands2
 from commands2 import (
     Command,
     InstantCommand,
     ParallelCommandGroup,
 )
-import commands2
+from commands2.button import CommandXboxController
 from phoenix6 import swerve
 from wpimath import applyDeadband
+from wpimath.geometry import Transform2d, Translation2d
 from subsystems.vision import Vision
 from telemetry import Telemetry
 from generated.tuner_constants import TunerConstants
 
-from commands2.button import CommandXboxController
 
 from ntcore import NetworkTableInstance
 from ntcore.util import ntproperty
@@ -18,6 +19,8 @@ from ntcore.util import ntproperty
 from wpilib import PowerDistribution, SmartDashboard
 
 from pathplannerlib.auto import AutoBuilder, NamedCommands, PathConstraints
+
+from commands.vision_align_tag import VisionAlignTag
 
 
 class RobotContainer:
@@ -141,6 +144,10 @@ class RobotContainer:
 
         self.driver_controller.x().onTrue(
             self.vision.toggle_vision_measurements_command()
+        )
+
+        self.driver_controller.a().whileTrue(
+            VisionAlignTag(self.drivetrain, self.vision, Transform2d.fromFeet(5, 5, 0))
         )
 
         """Operator"""

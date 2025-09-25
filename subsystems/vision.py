@@ -276,3 +276,26 @@ class Vision(Subsystem):
 
     def toggle_vision_measurements_command(self) -> Command:
         return InstantCommand(self.toggle_vision_measurements)
+
+    def get_displacement_to_tag(self, tag_id: int) -> Transform3d | None:
+        fl_results = self.fl_est.update()
+        if fl_results:
+            for target in fl_results.targetsUsed:
+                if target.fiducialId == tag_id:
+                    return self.to_fl + target.bestCameraToTarget
+        fr_results = self.fr_est.update()
+        if fr_results:
+            for target in fr_results.targetsUsed:
+                if target.fiducialId == tag_id:
+                    return self.to_fr + target.bestCameraToTarget
+        bl_results = self.bl_est.update()
+        if bl_results:
+            for target in bl_results.targetsUsed:
+                if target.fiducialId == tag_id:
+                    return self.to_bl + target.bestCameraToTarget
+        br_results = self.br_est.update()
+        if br_results:
+            for target in br_results.targetsUsed:
+                if target.fiducialId == tag_id:
+                    return self.to_br + target.bestCameraToTarget
+        return None
