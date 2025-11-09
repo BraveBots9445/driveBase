@@ -1,11 +1,13 @@
 from commands2 import (
     Command,
     InstantCommand,
-    ParallelCommandGroup,
 )
-import commands2
 from phoenix6 import swerve
+
 from wpimath import applyDeadband
+from wpimath.geometry import Transform2d, Rotation2d
+from wpimath.units import inchesToMeters
+
 from subsystems.vision import Vision
 from telemetry import Telemetry
 from generated.tuner_constants import TunerConstants
@@ -18,6 +20,8 @@ from ntcore.util import ntproperty
 from wpilib import PowerDistribution, SmartDashboard
 
 from pathplannerlib.auto import AutoBuilder, NamedCommands, PathConstraints
+
+from commands.align_to_targets import AlignToTargets
 
 
 class RobotContainer:
@@ -138,6 +142,19 @@ class RobotContainer:
         self.driver_controller.rightTrigger().onTrue(
             InstantCommand(double_speed)
         ).onFalse(InstantCommand(half_speed))
+
+        self.driver_controller.rightBumper().whileTrue(
+            AlignToTargets(
+                self.drivetrain,
+                self.vision,
+                [18],
+                Transform2d(inchesToMeters(16), inchesToMeters(7.5), Rotation2d(0)),
+                self.get_velocity_x,
+                self.get_velocity_y,
+                self.get_angular_rate,
+                tolerance=Transform2d(0.1, 0.1, Rotation2d.fromDegrees(0.5)),
+            )
+        )
 
         self.driver_controller.x().onTrue(
             self.vision.toggle_vision_measurements_command()

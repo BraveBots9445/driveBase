@@ -65,25 +65,25 @@ class Vision(Subsystem):
 
         self.to_fl = Transform3d(
             Translation3d(inchesToMeters(14), inchesToMeters(14), inchesToMeters(7)),
-            Rotation3d.fromDegrees(0, 15, -45),
+            Rotation3d.fromDegrees(0, 15, -25),
         )
         self.fl = photonCamera.PhotonCamera("Arducam_FL (1)")
 
         self.to_fr = Transform3d(
             Translation3d(inchesToMeters(14), -inchesToMeters(14), inchesToMeters(7)),
-            Rotation3d.fromDegrees(0, 15, 45),
+            Rotation3d.fromDegrees(0, 15, 25),
         )
         self.fr = photonCamera.PhotonCamera("Arducam_FR")
 
         self.to_bl = Transform3d(
             Translation3d(-inchesToMeters(14), inchesToMeters(14), inchesToMeters(7)),
-            Rotation3d.fromDegrees(0, 15, -135),
+            Rotation3d.fromDegrees(0, 15, -155),
         )
         self.bl = photonCamera.PhotonCamera("Arducam_BL")
 
         self.to_br = Transform3d(
             Translation3d(-inchesToMeters(14), -inchesToMeters(14), inchesToMeters(7)),
-            Rotation3d.fromDegrees(0, 15, 135),
+            Rotation3d.fromDegrees(0, 15, 155),
         )
         self.br = photonCamera.PhotonCamera("Arducam_BR")
 
@@ -312,7 +312,7 @@ class Vision(Subsystem):
         roll /= len(out_options)
         pitch /= len(out_options)
         yaw /= len(out_options)
-        return Transform3d(Translation3d(x, y, z), Rotation3d(roll, pitch, yaw))
+        return Transform3d(Translation3d(x, y, z), Rotation3d(roll, pitch, yaw + pi))
 
     def _transform3d_to_pose3d(self, transform: Transform3d) -> Pose3d:
         return Pose3d(transform.translation(), transform.rotation())
