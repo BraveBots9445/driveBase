@@ -1,5 +1,4 @@
 from commands2 import Command, CommandScheduler
-from ntcore import NetworkTableInstance
 from wpilib import (
     DriverStation,
     TimedRobot,
@@ -7,10 +6,6 @@ from wpilib import (
     DataLogManager,
 )
 import wpilib
-
-from wpimath.geometry import Pose3d, Translation3d, Rotation3d, Rotation2d
-from wpimath.units import inchesToMeters
-
 
 from RobotContainer import RobotContainer
 

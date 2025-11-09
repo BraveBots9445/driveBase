@@ -276,3 +276,46 @@ class Vision(Subsystem):
 
     def toggle_vision_measurements_command(self) -> Command:
         return InstantCommand(self.toggle_vision_measurements)
+
+    def get_offset_to_target(self, target_id: int) -> Transform3d | None:
+        # performance might be an issue with using all of the readings and averaging,
+        # but it should be more accurate and it should not happen often.
+        out_options: list[Transform3d] = []
+        for camera, offset in zip(
+            [self.fl, self.fr, self.bl, self.br],
+            [self.to_fl, self.to_fr, self.to_bl, self.to_br],
+        ):
+            results = camera.getLatestResult()
+            for result in results.getTargets():
+                if result.fiducialId == target_id:
+                    out_options.append(offset + result.getBestCameraToTarget())
+
+        if len(out_options) == 0:
+            return None
+        # average the values in out_options
+        x: meters = 0
+        y: meters = 0
+        z: meters = 0
+        roll: radians = 0
+        pitch: radians = 0
+        yaw: radians = 0
+        for option in out_options:
+            x += option.X()
+            y += option.Y()
+            z += option.Z()
+            roll += option.rotation().x
+            pitch += option.rotation().y
+            yaw += option.rotation().z
+        x /= len(out_options)
+        y /= len(out_options)
+        z /= len(out_options)
+        roll /= len(out_options)
+        pitch /= len(out_options)
+        yaw /= len(out_options)
+        return Transform3d(Translation3d(x, y, z), Rotation3d(roll, pitch, yaw))
+
+    def _transform3d_to_pose3d(self, transform: Transform3d) -> Pose3d:
+        return Pose3d(transform.translation(), transform.rotation())
+
+    def _pose3d_to_transform3d(self, pose: Pose3d) -> Transform3d:
+        return Transform3d(pose.translation(), pose.rotation())
