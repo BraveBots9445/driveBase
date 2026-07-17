@@ -1,20 +1,10 @@
 from commands2 import Command, CommandScheduler
-from ntcore import NetworkTableInstance
-from wpilib import (
-    DriverStation,
-    TimedRobot,
-    run,
-    DataLogManager,
-)
+from wpilib import DriverStation, TimedRobot, DataLogManager, RobotBase
 import wpilib
 
-from wpimath.geometry import Pose3d, Translation3d, Rotation3d, Rotation2d
-from wpimath.units import inchesToMeters
+from phoenix6.signal_logger import SignalLogger
 
-
-from RobotContainer import RobotContainer
-
-from util import elastic
+from robotcontainer import RobotContainer
 
 
 class Robot(TimedRobot):
@@ -23,18 +13,22 @@ class Robot(TimedRobot):
 
     # Initialize Robot
     def robotInit(self):
+        DriverStation.silenceJoystickConnectionWarning(True)
+        if RobotBase.isReal():
+            DataLogManager.start()
+            DriverStation.startDataLog(DataLogManager.getLog())
+        else:
+            SignalLogger.set_path("./.logs/sim")
+            SignalLogger.stop()
         self.m_robotContainer = RobotContainer()
-        DataLogManager.start()
-        DriverStation.startDataLog(DataLogManager.getLog())
 
     def robotPeriodic(self) -> None:
-        try:
-            CommandScheduler.getInstance().run()
-        except Exception as e:
-            wpilib.reportError(f"Got Error from Command Scheduler: {e}", True)
+        CommandScheduler.getInstance().run()
+        # wpilib.reportError(f"Got Error from Command Scheduler: {e}", True)
 
     def autonomousInit(self):
-        elastic.select_tab("Autonomous")
+        # if hasattr(self.m_robotContainer, "shooter"):
+        #     self.m_robotContainer.shooter.setHoodIdle(False)
         self.m_autonomousCommand = self.m_robotContainer.get_auto_command()
 
         CommandScheduler.getInstance().schedule(self.m_autonomousCommand)
@@ -48,8 +42,9 @@ class Robot(TimedRobot):
 
     # Teleop Robot Functions
     def teleopInit(self):
-        elastic.select_tab("Teleoperated")
         if self.m_robotContainer is not None:
+            # if hasattr(self.m_robotContainer, "shooter"):
+            #     self.m_robotContainer.shooter.setHoodIdle(False)
             self.m_robotContainer.set_teleop_bindings()
 
     def teleopPeriodic(self):
@@ -60,7 +55,7 @@ class Robot(TimedRobot):
 
     # Test Robot Functions
     def testInit(self) -> None:
-        pass
+        self.m_robotContainer.set_test_bindings()
 
     def testPeriodic(self):
         pass
@@ -70,6 +65,8 @@ class Robot(TimedRobot):
 
     # Disabled Robot Functions
     def disabledInit(self):
+        # if hasattr(self.m_robotContainer, "shooter"):
+        #     self.m_robotContainer.shooter.setHoodIdle(False)
         pass
 
     def disabledPeriodic(self) -> None:
@@ -84,8 +81,3 @@ class Robot(TimedRobot):
 
     def _simulationPeriodic(self) -> None:
         pass
-
-
-# Start the Robot when Executing Code
-if __name__ == "__main__":
-    run(Robot)
