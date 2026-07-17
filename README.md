@@ -6,7 +6,7 @@ To set up swerve for your usecase, you will modify the tuner-project.json and ge
 To set up vision for your usecase, you can modify subsystems/vision.py. Most likely, the positions of the cameras defined in the subsystem constructor will be a majority of your modifications. You may also change the base standard deviations found above the constructor.  (See the [docs](https://docs.photonvision.org/en/latest/index.html))
 To set up pathplanner, you can 
 1. Open this project in pathplanner itself and create paths. 
-2. Set any needed named commands in RobotContainer.py in the ```set_pp_named_commands``` function
+2. Set any needed named commands in robotcontainer.py in the ```set_pp_named_commands``` function
 3. Tune the PathPlanner constants in subsystems/drivetrain.py around line 267.
 
 # Running
