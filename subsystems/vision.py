@@ -211,7 +211,7 @@ class Vision:
 
         tags = []
         trustRotation = speed < 0.5 and vel.omega_dps < 15
-        baseConfidence = 0.2
+        baseConfidence = 1.104268199
         rotationConfidence = 0.3 if RobotState.isDisabled() else 10
         # _, BLRTags = self._backLeftReverseCamera.update()
         _, shooterRightTags = self._shooterRightCamera.update(
@@ -221,8 +221,8 @@ class Vision:
         # _, BRFTags = self._backRightForwardCamera.update()
         # if not tags:
         _, ShooterLeftTags = self._shooterLeftCamera.update(
-            baseConfidence * (len(tags) + 1),
-            rotationConfidence * (len(tags) + 1),
+            baseConfidence / (len(tags) + 1),
+            rotationConfidence / (len(tags) + 1),
             enabled,
             trustRotation,
         )
