@@ -1,12 +1,10 @@
-from math import hypot, pi
-
 from typing import Callable
 
-from wpilib import RobotController, RobotBase
+from wpilib import RobotBase
 
 from wpimath.geometry import Transform3d, Pose3d
 from wpimath.kinematics import ChassisSpeeds
-from wpimath.units import microseconds, seconds
+from wpimath.units import seconds
 
 from robotpy_apriltag import AprilTagFieldLayout
 

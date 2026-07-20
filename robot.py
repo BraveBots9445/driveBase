@@ -24,11 +24,8 @@ class Robot(TimedRobot):
 
     def robotPeriodic(self) -> None:
         CommandScheduler.getInstance().run()
-        # wpilib.reportError(f"Got Error from Command Scheduler: {e}", True)
 
     def autonomousInit(self):
-        # if hasattr(self.m_robotContainer, "shooter"):
-        #     self.m_robotContainer.shooter.setHoodIdle(False)
         self.m_autonomousCommand = self.m_robotContainer.get_auto_command()
 
         CommandScheduler.getInstance().schedule(self.m_autonomousCommand)
@@ -43,8 +40,6 @@ class Robot(TimedRobot):
     # Teleop Robot Functions
     def teleopInit(self):
         if self.m_robotContainer is not None:
-            # if hasattr(self.m_robotContainer, "shooter"):
-            #     self.m_robotContainer.shooter.setHoodIdle(False)
             self.m_robotContainer.set_teleop_bindings()
 
     def teleopPeriodic(self):
@@ -65,8 +60,6 @@ class Robot(TimedRobot):
 
     # Disabled Robot Functions
     def disabledInit(self):
-        # if hasattr(self.m_robotContainer, "shooter"):
-        #     self.m_robotContainer.shooter.setHoodIdle(False)
         pass
 
     def disabledPeriodic(self) -> None:
