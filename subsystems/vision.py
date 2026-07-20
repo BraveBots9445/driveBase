@@ -1,8 +1,8 @@
 from typing import Callable
 
 from commands2 import Command, InstantCommand
-from wpilib import RobotBase, SmartDashboard
-from math import e, pi, hypot
+from wpilib import RobotBase
+from math import hypot
 from ntcore import NetworkTableInstance, StructArrayPublisher
 from ntcore.util import ntproperty
 
@@ -14,14 +14,9 @@ from wpimath.geometry import (
     Transform3d,
     Rotation3d,
     Pose3d,
-    Rotation2d,
 )
 from wpimath.units import (
     seconds,
-    meters,
-    radians,
-    meters_per_second,
-    degrees_per_second,
 )
 from wpimath.kinematics import ChassisSpeeds
 
@@ -42,13 +37,10 @@ from tools.BraveLogger import (
 class Vision:
     _enabled = ntproperty("000Vision/Enabled", True)
 
-    # these names and their associated positions are fake
     _turretCamera: VisionCamera
     _shooterRightCamera: VisionCamera
-    # _backLeftReverseCamera: VisionCamera
     _shooterLeftCamera: VisionCamera
 
-    # TODO: The below offsets are all garbage from copilot
     _shooterLeftRobotToCamera: Transform3d = Transform3d(
         Translation3d(inchesToMeters(-3.5), inchesToMeters(9.5), inchesToMeters(16.75)),
         Rotation3d.fromDegrees(0, 9.0584, -155),
@@ -61,22 +53,7 @@ class Vision:
         Rotation3d.fromDegrees(0, 9.0584, 155),
     )
 
-    # _backLeftReverseCameraToRobot: Transform3d = Transform3d(
-    #     Translation3d(
-    #         inchesToMeters(-12.5), inchesToMeters(13.5), inchesToMeters(7.75)
-    #     ),
-    #     Rotation3d.fromDegrees(0, 30 + 5.6 if RobotBase.isReal() else 0, 120),
-    # )
-
-    # _backRightForwardCameraToRobot: Transform3d = Transform3d(
-    #     Translation3d(
-    #         inchesToMeters(-10.5), inchesToMeters(-13.5), inchesToMeters(7.75)
-    #     ),
-    #     Rotation3d.fromDegrees(0, 30 + 2.04 if RobotBase.isReal() else 0, -60),
-    # )
-
     _tagLayout: AprilTagFieldLayout = AprilTagFieldLayout.loadField(
-        # AprilTagField.kDefaultField
         AprilTagField.k2026RebuiltWelded
     )
 
@@ -132,22 +109,6 @@ class Vision:
             ShooterLeftCameraData(False, 0, 0, Pose3d()),
         )
 
-        # self._backRightForwardCamera = VisionCamera(
-        #     "ArducamOV9281-BR-F",
-        #     self._tagLayout,
-        #     self._backRightForwardCameraToRobot,
-        #     logVisionMeasurement,
-        #     getRobotVelocity,
-        # )
-
-        # self._backLeftReverseCamera = VisionCamera(
-        #     "ArducamOV9281-BL-R",
-        #     self._tagLayout,
-        #     self._backLeftReverseCameraToRobot,
-        #     logVisionMeasurement,
-        #     getRobotVelocity,
-        # )
-
         self._poseEstPub = self.nettable.getStructArrayTopic(
             "EstimatedPoses",
             Pose2d,
@@ -167,16 +128,11 @@ class Vision:
             self._visionSim.addCamera(
                 self._shooterLeftCamera.getCameraSim(), self._shooterLeftRobotToCamera  # type: ignore
             )
-            # self._visionSim.addCamera(
-            #     self._backLeftReverseCamera.getCameraSim(), self._backLeftReverseCameraToRobot  # type: ignore
-            # )
-            # self._visionSim.addCamera(
-            #     self._backRightForwardCamera.getCameraSim(), self._backRightForwardCameraToRobot  # type: ignore
-            # )
+
             self._visionSim.addCamera(
                 self._shooterRightCamera.getCameraSim(), self._shooterRightCameraToRobot  # type: ignore
             )
-            # SmartDashboard.putData(self._visionSim.getDebugField())
+
             self._simNotifier = Notifier(self._simulationPeriodic)
             self._simNotifier.startPeriodic(0.02)
         self._periodicRunning = False
@@ -197,12 +153,7 @@ class Vision:
                     self._periodicRunning = False
 
     def _periodic(self) -> None:
-        # turret camera does not do pose estimation
         enabled = self._enabled
-        if (
-            not self._enabled
-        ):  # or (RobotState.isAutonomous() and RobotState.isEnabled()):
-            enabled = False
 
         vel = self._getRobotVelocity()
         speed = hypot(vel.vx, vel.vy)
@@ -211,18 +162,15 @@ class Vision:
 
         tags = []
         trustRotation = speed < 0.5 and vel.omega_dps < 15
-        baseConfidence = 0.2
+        baseConfidence = 1.104268199
         rotationConfidence = 0.3 if RobotState.isDisabled() else 10
-        # _, BLRTags = self._backLeftReverseCamera.update()
         _, shooterRightTags = self._shooterRightCamera.update(
             baseConfidence, rotationConfidence, enabled, trustRotation
         )
         tags.extend(shooterRightTags)
-        # _, BRFTags = self._backRightForwardCamera.update()
-        # if not tags:
         _, ShooterLeftTags = self._shooterLeftCamera.update(
-            baseConfidence * (len(tags) + 1),
-            rotationConfidence * (len(tags) + 1),
+            baseConfidence / (len(tags) + 1),
+            rotationConfidence / (len(tags) + 1),
             enabled,
             trustRotation,
         )
